@@ -59,7 +59,7 @@ predictBtn.addEventListener("click", async () => {
 
     try {
 
-        fetch("https://agri-smart-gamma.vercel.app//predict-crop", {
+     fetch("https://agri-smart-gamma.vercel.app/predict-crop", {
     method: "POST",
     headers: {
         "Content-Type": "application/json"
