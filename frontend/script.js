@@ -59,20 +59,13 @@ predictBtn.addEventListener("click", async () => {
 
     try {
 
-        const response = await fetch("http://127.0.0.1:8000/predict-crop", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                N: Number(N),
-                P: Number(P),
-                K: Number(K),
-                temperature: Number(temperature),
-                humidity: Number(humidity),
-                ph: Number(ph),
-                rainfall: Number(rainfall)
-            })
+        fetch("https://agri-smart-gamma.vercel.app//predict-crop", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+})
         });
 
         if (!response.ok) {
