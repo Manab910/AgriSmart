@@ -56,90 +56,82 @@ predictBtn.addEventListener("click", async () => {
     document.getElementById("displayTemp").innerHTML = "--";
     document.getElementById("displayHumidity").innerHTML = "--";
     document.getElementById("displayRainfall").innerHTML = "--";
-
-    try {
+try {
 
     const data = {
-    N: Number(N),
-    P: Number(P),
-    K: Number(K),
-    temperature: Number(temperature),
-    humidity: Number(humidity),
-    ph: Number(ph),
-    rainfall: Number(rainfall)
-};
+        N: Number(N),
+        P: Number(P),
+        K: Number(K),
+        temperature: Number(temperature),
+        humidity: Number(humidity),
+        ph: Number(ph),
+        rainfall: Number(rainfall)
+    };
 
-const response = await fetch(
-    "https://agri-smart-gamma.vercel.app/predict-crop",
-    {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    }
-);
-
-if (!response.ok) {
-    throw new Error("Prediction failed");
-}
-
-const result = await response.json();
-
-const crop = document.getElementById("cropName");
-const cropIcon = document.getElementById("cropIcon");
-
-cropIcon.innerHTML =
-    icons[result.recommended_crop.toLowerCase()] || "🌱";
-
-crop.innerHTML = result.recommended_crop;
-
-crop.classList.add("success");
-
-setTimeout(() => {
-    crop.classList.remove("success");
-}, 400);
-
-        // Message
-        document.getElementById("predictionMessage").innerHTML =
-            result.message ||
-            "The AI model recommends this crop based on your soil and environmental conditions.";
-
-        // Confidence
-        if (result.confidence !== undefined && result.confidence !== null) {
-            document.getElementById("confidence").innerHTML =
-                result.confidence + "%";
-        } else {
-            document.getElementById("confidence").innerHTML =
-                "Available Soon";
+    const response = await fetch(
+        "https://agri-smart-gamma.vercel.app/predict-crop",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         }
+    );
 
-        // Weather
-        document.getElementById("displayTemp").innerHTML =
-            (result.temperature ?? temperature) + " °C";
+    if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+    }
 
-        document.getElementById("displayHumidity").innerHTML =
-            (result.humidity ?? humidity) + " %";
+    const result = await response.json();
 
-        document.getElementById("displayRainfall").innerHTML =
-            (result.rainfall ?? rainfall) + " mm";
+    const crop = document.getElementById("cropName");
+    const cropIcon = document.getElementById("cropIcon");
 
-    } catch (error) {
+    cropIcon.innerHTML =
+        icons[result.recommended_crop.toLowerCase()] || "🌱";
 
-        console.error(error);
+    crop.innerHTML = result.recommended_crop;
 
-        document.getElementById("cropName").innerHTML =
-            "Prediction Failed";
+    crop.classList.add("success");
 
-        document.getElementById("predictionMessage").innerHTML =
-            "Unable to connect to the FastAPI backend.";
+    setTimeout(() => {
+        crop.classList.remove("success");
+    }, 400);
 
-        document.getElementById("confidence").innerHTML = "--";
-        document.getElementById("displayTemp").innerHTML = "--";
-        document.getElementById("displayHumidity").innerHTML = "--";
-        document.getElementById("displayRainfall").innerHTML = "--";
+    document.getElementById("predictionMessage").innerHTML =
+        result.message ||
+        "The AI model recommends this crop based on your soil and environmental conditions.";
 
-    } finally {
+    document.getElementById("confidence").innerHTML =
+        result.confidence !== undefined
+            ? result.confidence + "%"
+            : "Available Soon";
+
+    document.getElementById("displayTemp").innerHTML =
+        (result.temperature ?? temperature) + " °C";
+
+    document.getElementById("displayHumidity").innerHTML =
+        (result.humidity ?? humidity) + " %";
+
+    document.getElementById("displayRainfall").innerHTML =
+        (result.rainfall ?? rainfall) + " mm";
+
+} catch (error) {
+
+    console.error(error);
+
+    document.getElementById("cropName").innerHTML = "Prediction Failed";
+
+    document.getElementById("predictionMessage").innerHTML =
+        error.message;
+
+    document.getElementById("confidence").innerHTML = "--";
+    document.getElementById("displayTemp").innerHTML = "--";
+    document.getElementById("displayHumidity").innerHTML = "--";
+    document.getElementById("displayRainfall").innerHTML = "--";
+
+} finally {
 
         loader.classList.add("hidden");
 
