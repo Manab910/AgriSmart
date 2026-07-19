@@ -59,20 +59,32 @@ predictBtn.addEventListener("click", async () => {
 
     try {
 
-     fetch("https://agri-smart-gamma.vercel.app/predict-crop", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-})
-        });
+    const data = {
+    N: Number(N),
+    P: Number(P),
+    K: Number(K),
+    temperature: Number(temperature),
+    humidity: Number(humidity),
+    ph: Number(ph),
+    rainfall: Number(rainfall)
+};
 
-        if (!response.ok) {
-            throw new Error("Prediction failed");
-        }
+const response = await fetch(
+    "https://agri-smart-gamma.vercel.app/predict-crop",
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    }
+);
 
-      const result = await response.json();
+if (!response.ok) {
+    throw new Error("Prediction failed");
+}
+
+const result = await response.json();
 
 const crop = document.getElementById("cropName");
 const cropIcon = document.getElementById("cropIcon");
