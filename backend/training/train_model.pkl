@@ -1,0 +1,209 @@
+import os
+import joblib
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report
+)
+
+# ===========================================
+# Create folders
+# ===========================================
+
+os.makedirs("../models", exist_ok=True)
+os.makedirs("../results/comparison", exist_ok=True)
+os.makedirs("../results/confusion_matrices", exist_ok=True)
+
+# ===========================================
+# Load Dataset
+# ===========================================
+
+df = pd.read_csv("../dataset/Crop_recommendation.csv")
+
+# ===========================================
+# Features & Target
+# ===========================================
+
+X = df.drop("label", axis=1)
+y = df["label"]
+
+# ===========================================
+# Label Encoding
+# ===========================================
+
+encoder = LabelEncoder()
+y = encoder.fit_transform(y)
+
+# ===========================================
+# Train Test Split
+# ===========================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+# ===========================================
+# Models
+# ===========================================
+
+models = {
+    "Decision Tree": DecisionTreeClassifier(random_state=42),
+
+    "Random Forest": RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    ),
+
+    "KNN": KNeighborsClassifier(),
+
+    "SVM": SVC(),
+
+    "Naive Bayes": GaussianNB()
+}
+
+results = []
+
+best_accuracy = 0
+best_model = None
+best_name = ""
+
+print("="*70)
+print("MODEL TRAINING")
+print("="*70)
+
+for name, model in models.items():
+
+    print(f"\n{name}")
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    accuracy = accuracy_score(y_test, y_pred)
+
+    precision = precision_score(
+        y_test,
+        y_pred,
+        average="weighted"
+    )
+
+    recall = recall_score(
+        y_test,
+        y_pred,
+        average="weighted"
+    )
+
+    f1 = f1_score(
+        y_test,
+        y_pred,
+        average="weighted"
+    )
+
+    print(f"Accuracy : {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall   : {recall:.4f}")
+    print(f"F1 Score : {f1:.4f}")
+
+    print("\nClassification Report")
+    print(classification_report(y_test, y_pred))
+
+    cm = confusion_matrix(y_test, y_pred)
+
+    plt.figure(figsize=(10,8))
+
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap="Greens"
+    )
+
+    plt.title(name)
+
+    plt.xlabel("Predicted")
+
+    plt.ylabel("Actual")
+
+    plt.tight_layout()
+
+    plt.savefig(
+        f"../results/confusion_matrices/{name}.png"
+    )
+
+    plt.close()
+
+    results.append([
+        name,
+        accuracy,
+        precision,
+        recall,
+        f1
+    ])
+
+    if accuracy > best_accuracy:
+        best_accuracy = accuracy
+        best_model = model
+        best_name = name
+
+# ===========================================
+# Save CSV
+# ===========================================
+
+results_df = pd.DataFrame(
+    results,
+    columns=[
+        "Model",
+        "Accuracy",
+        "Precision",
+        "Recall",
+        "F1 Score"
+    ]
+)
+
+results_df.to_csv(
+    "../results/comparison/model_results.csv",
+    index=False
+)
+
+# ===========================================
+# Save Best Model
+# ===========================================
+
+joblib.dump(
+    best_model,
+    "../models/best_model.pkl"
+)
+
+joblib.dump(
+    encoder,
+    "../models/label_encoder.pkl"
+)
+
+print("\n")
+print("="*70)
+print("BEST MODEL")
+print("="*70)
+print(best_name)
+print(f"Accuracy : {best_accuracy:.4f}")
+
+print("\nModel Saved Successfully")
